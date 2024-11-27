@@ -18,6 +18,9 @@ dataSources:
       entities:
         - ParameterUpdate
         - SetController
+        - Bond
+        - EarningsClaimed
+        - Rebond
       abis:
         - name: ManagerProxy
           file: ./abis/ManagerProxy.json
@@ -26,4 +29,10 @@ dataSources:
           handler: handleParameterUpdate
         - event: SetController(address)
           handler: handleSetController
+        - event: Bond(address,address,uint256,uint256,uint256) # Adjust the event signature accordingly
+          handler: handleBond
+        - event: EarningsClaimed(address,address,uint256,uint256,uint256,uint256) # Adjust the event signature accordingly
+          handler: handleEarningsClaimed
+        - event: Rebond(address,address,uint256,uint256) # Adjust the event signature accordingly
+          handler: handleRebond
       file: ./src/manager-proxy.ts

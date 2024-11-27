@@ -1,9 +1,9 @@
 import {
   ParameterUpdate as ParameterUpdateEvent,
   SetController as SetControllerEvent,
+  Rebond as RebondEvent,
   Bond as BondEvent,
-  EarningsClaimed as EarningsClaimedEvent,
-  Rebond as RebondEvent
+  EarningsClaimed as EarningsClaimedEvent
 } from "../generated/ManagerProxy/ManagerProxy"
 import {
   ParameterUpdate,
@@ -39,7 +39,6 @@ export function handleSetController(event: SetControllerEvent): void {
   entity.save()
 }
 
-// New handler for Bond event
 export function handleBond(event: BondEvent): void {
   let entity = new Bond(
     event.transaction.hash.concatI32(event.logIndex.toI32())
@@ -57,17 +56,13 @@ export function handleBond(event: BondEvent): void {
   entity.save()
 }
 
-// New handler for EarningsClaimed event
 export function handleEarningsClaimed(event: EarningsClaimedEvent): void {
   let entity = new EarningsClaimed(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.delegate = event.params.delegate
   entity.delegator = event.params.delegator
-  entity.rewards = event.params.rewards
   entity.fees = event.params.fees
-  entity.startRound = event.params.startRound
-  entity.endRound = event.params.endRound
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
@@ -76,7 +71,6 @@ export function handleEarningsClaimed(event: EarningsClaimedEvent): void {
   entity.save()
 }
 
-// New handler for Rebond event
 export function handleRebond(event: RebondEvent): void {
   let entity = new Rebond(
     event.transaction.hash.concatI32(event.logIndex.toI32())
