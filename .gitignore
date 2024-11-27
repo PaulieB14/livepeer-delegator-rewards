@@ -1,0 +1,83 @@
+# Graph CLI generated artifacts
+build/
+generated/
+
+# Dependency directories
+node_modules/
+.bun/
+dist/
+out/
+jspm_packages/
+
+# Logs and temporary files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.pid
+*.pid.lock
+*.seed
+*.swp
+*.swo
+*.swn
+*.lock
+
+# Optional npm cache
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables
+.env
+.env.local
+
+# Testing and coverage
+coverage/
+coverage.json
+
+# Typechain files
+typechain/
+typechain-types/
+
+# Hardhat cache
+cache/
+
+# macOS and system-specific files
+.DS_Store
+.Trash/
+Library/
+Movies/
+Music/
+Pictures/
+*.plist
+Library/Application Support/**
+Library/Caches/**
+
+# Docker
+docker/
+docker/**/*
+
+# IDE-specific files
+.idea/
+.vscode/
+*.sublime-workspace
+
+# User-specific configuration files
+*.history
+*.lesshst
+.npmrc
+.viminfo
+.zsh_history
+
+# Ignore Chrome and other cache files
+Library/Application Support/Google/**
+Library/Caches/**
+
+# Ignore package lock files to avoid unnecessary changes
+package-lock.json
+yarn.lock
+
+# Ignore root-level generated files
+*.lock

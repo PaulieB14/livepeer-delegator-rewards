@@ -1,0 +1,15 @@
+type ParameterUpdate @entity(immutable: true) {
+  id: Bytes!
+  param: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type SetController @entity(immutable: true) {
+  id: Bytes!
+  controller: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

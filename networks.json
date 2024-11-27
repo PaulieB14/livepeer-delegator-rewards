@@ -1,0 +1,8 @@
+{
+  "arbitrum-one": {
+    "ManagerProxy": {
+      "address": "0x35Bcf3c30594191d53231E4FF333E8A770453e40",
+      "startBlock": 5856381
+    }
+  }
+}
