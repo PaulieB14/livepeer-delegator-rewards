@@ -1,6 +1,6 @@
 type ParameterUpdate @entity(immutable: true) {
   id: Bytes!
-  param: String! # string
+  param: String!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -8,7 +8,46 @@ type ParameterUpdate @entity(immutable: true) {
 
 type SetController @entity(immutable: true) {
   id: Bytes!
-  controller: Bytes! # address
+  controller: Bytes!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+# New entity to track bonding (delegation)
+type Bond @entity {
+  id: Bytes! # Unique ID for the Bonding instance
+  newDelegate: Bytes! # Address of the new delegate
+  oldDelegate: Bytes # Address of the old delegate, optional if this is the first time bonding
+  delegator: Bytes! # Address of the delegator
+  additionalAmount: BigInt! # Additional amount bonded
+  bondedAmount: BigInt! # Total amount bonded
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+# New entity to track earnings claimed by delegators
+type EarningsClaimed @entity {
+  id: Bytes! # Unique ID for each earnings claim event
+  delegate: Bytes! # Address of the delegate
+  delegator: Bytes! # Address of the delegator
+  rewards: BigInt! # Amount of rewards claimed
+  fees: BigInt! # Amount of fees claimed
+  startRound: BigInt! # Starting round of the rewards claim period
+  endRound: BigInt! # Ending round of the rewards claim period
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+# Entity to track rebonding
+type Rebond @entity {
+  id: Bytes!
+  delegate: Bytes! # Address of the delegate
+  delegator: Bytes! # Address of the delegator
+  unbondingLockId: BigInt! # Unbonding lock ID
+  amount: BigInt! # Amount rebonded
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

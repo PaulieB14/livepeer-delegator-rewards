@@ -1,0 +1,29 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ManagerProxy
+    network: arbitrum-one
+    source:
+      address: "0x35Bcf3c30594191d53231E4FF333E8A770453e40"
+      abi: ManagerProxy
+      startBlock: 5856381
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ParameterUpdate
+        - SetController
+      abis:
+        - name: ManagerProxy
+          file: ./abis/ManagerProxy.json
+      eventHandlers:
+        - event: ParameterUpdate(string)
+          handler: handleParameterUpdate
+        - event: SetController(address)
+          handler: handleSetController
+      file: ./src/manager-proxy.ts
