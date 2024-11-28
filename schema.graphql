@@ -1,54 +1,120 @@
 type ParameterUpdate @entity(immutable: true) {
+  "Unique ID for the parameter update."
   id: Bytes!
+
+  "The parameter being updated."
   param: String!
+
+  "The block number in which the update occurred."
   blockNumber: BigInt!
+
+  "The timestamp of the block when the update occurred."
   blockTimestamp: BigInt!
+
+  "The hash of the transaction that triggered the update."
   transactionHash: Bytes!
 }
 
 type SetController @entity(immutable: true) {
+  "Unique ID for the controller setting event."
   id: Bytes!
+
+  "Address of the new controller."
   controller: Bytes!
+
+  "The block number in which the controller was set."
   blockNumber: BigInt!
+
+  "The timestamp of the block when the controller was set."
   blockTimestamp: BigInt!
+
+  "The hash of the transaction that triggered the setting of the controller."
   transactionHash: Bytes!
 }
 
-# New entity to track bonding (delegation)
 type Bond @entity {
-  id: Bytes! # Unique ID for the Bonding instance
-  newDelegate: Bytes! # Address of the new delegate
-  oldDelegate: Bytes # Address of the old delegate, optional if this is the first time bonding
-  delegator: Bytes! # Address of the delegator
-  additionalAmount: BigInt! # Additional amount bonded
-  bondedAmount: BigInt! # Total amount bonded
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-# New entity to track earnings claimed by delegators
-type EarningsClaimed @entity {
-  id: Bytes! # Unique ID for each earnings claim event
-  delegate: Bytes! # Address of the delegate
-  delegator: Bytes! # Address of the delegator
-  rewards: BigInt! # Amount of rewards claimed
-  fees: BigInt! # Amount of fees claimed
-  startRound: BigInt! # Starting round of the rewards claim period
-  endRound: BigInt! # Ending round of the rewards claim period
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-# Entity to track rebonding
-type Rebond @entity {
+  "Unique ID for the Bonding instance."
   id: Bytes!
-  delegate: Bytes! # Address of the delegate
-  delegator: Bytes! # Address of the delegator
-  unbondingLockId: BigInt! # Unbonding lock ID
-  amount: BigInt! # Amount rebonded
+
+  "Address of the new delegate."
+  newDelegate: Bytes!
+
+  "Address of the old delegate (optional if this is the first time bonding)."
+  oldDelegate: Bytes
+
+  "Address of the delegator."
+  delegator: Bytes!
+
+  "Additional amount bonded in this instance."
+  additionalAmount: BigInt!
+
+  "Total amount bonded by the delegator."
+  bondedAmount: BigInt!
+
+  "The block number in which the bonding event occurred."
   blockNumber: BigInt!
+
+  "The timestamp of the block when the bonding event occurred."
   blockTimestamp: BigInt!
+
+  "The hash of the transaction that triggered the bonding event."
+  transactionHash: Bytes!
+}
+
+type EarningsClaimed @entity {
+  "Unique ID for each earnings claim event."
+  id: Bytes!
+
+  "Address of the delegate receiving the earnings."
+  delegate: Bytes!
+
+  "Address of the delegator claiming the earnings."
+  delegator: Bytes!
+
+  "Amount of rewards claimed during this event."
+  rewards: BigInt!
+
+  "Amount of fees claimed during this event."
+  fees: BigInt!
+
+  "Starting round of the rewards claim period."
+  startRound: BigInt!
+
+  "Ending round of the rewards claim period."
+  endRound: BigInt!
+
+  "The block number in which the earnings were claimed."
+  blockNumber: BigInt!
+
+  "The timestamp of the block when the earnings were claimed."
+  blockTimestamp: BigInt!
+
+  "The hash of the transaction that triggered the claim event."
+  transactionHash: Bytes!
+}
+
+type Rebond @entity {
+  "Unique ID for the rebonding event."
+  id: Bytes!
+
+  "Address of the delegate involved in the rebonding."
+  delegate: Bytes!
+
+  "Address of the delegator rebonding their stake."
+  delegator: Bytes!
+
+  "ID of the unbonding lock used for rebonding."
+  unbondingLockId: BigInt!
+
+  "Amount rebonded in this event."
+  amount: BigInt!
+
+  "The block number in which the rebonding event occurred."
+  blockNumber: BigInt!
+
+  "The timestamp of the block when the rebonding event occurred."
+  blockTimestamp: BigInt!
+
+  "The hash of the transaction that triggered the rebonding event."
   transactionHash: Bytes!
 }
