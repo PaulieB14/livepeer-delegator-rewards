@@ -19,6 +19,11 @@ dataSources:
         - Bond
         - EarningsClaimed
         - Rebond
+        - Delegator
+        - UnbondingLock
+        - Round
+        - PendingEarnings
+        - RoundEarnings  # Added the new entity here
       abis:
         - name: ManagerProxy
           file: ./abis/ManagerProxy.json
@@ -30,7 +35,15 @@ dataSources:
         - event: Bond(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleBond
         - event: EarningsClaimed(indexed address,indexed address,uint256,uint256,uint256,uint256)
-          handler: handleEarningsClaimed
+          handler: handleEarningsClaimed  # Update this handler to include logic for RoundEarnings
         - event: Rebond(indexed address,indexed address,uint256,uint256)
           handler: handleRebond
+        - event: Unbond(indexed address,indexed address,uint256,uint256,uint256)
+          handler: handleUnbond
+        - event: Reward(indexed address,uint256)
+          handler: handleReward
+        - event: WithdrawFees(indexed address,address,uint256)
+          handler: handleWithdrawFees
+        - event: WithdrawStake(indexed address,uint256,uint256,uint256)
+          handler: handleWithdrawStake
       file: ./src/manager-proxy.ts

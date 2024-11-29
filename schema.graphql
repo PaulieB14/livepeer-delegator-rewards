@@ -33,7 +33,7 @@ type SetController @entity(immutable: true) {
 }
 
 type Bond @entity {
-  "Unique ID for the Bonding instance."
+  "Unique ID for the bonding instance."
   id: Bytes!
 
   "Address of the new delegate."
@@ -69,7 +69,7 @@ type EarningsClaimed @entity {
   delegate: Bytes!
 
   "Address of the delegator claiming the earnings."
-  delegator: Bytes!
+  delegator: Delegator!
 
   "Amount of rewards claimed during this event."
   rewards: BigInt!
@@ -101,7 +101,7 @@ type Rebond @entity {
   delegate: Bytes!
 
   "Address of the delegator rebonding their stake."
-  delegator: Bytes!
+  delegator: Delegator!
 
   "ID of the unbonding lock used for rebonding."
   unbondingLockId: BigInt!
@@ -117,4 +117,136 @@ type Rebond @entity {
 
   "The hash of the transaction that triggered the rebonding event."
   transactionHash: Bytes!
+}
+
+type Delegator @entity {
+  "Unique ID for the delegator."
+  id: Bytes!
+
+  "The amount of bonded tokens."
+  bondedAmount: BigInt!
+
+  "The amount of fees collected by the delegator."
+  fees: BigInt!
+
+  "Address of the delegate this delegator is bonded to."
+  delegateAddress: Bytes!
+
+  "The total amount of tokens delegated to the delegator."
+  delegatedAmount: BigInt!
+
+  "The round in which the delegator's bond became effective."
+  startRound: BigInt!
+
+  "The last round in which the delegator claimed its earnings."
+  lastClaimRound: BigInt!
+
+  "The ID for the next unbonding lock created for the delegator."
+  nextUnbondingLockId: BigInt!
+
+  "Earnings claimed by this delegator."
+  earnings: [EarningsClaimed!]! @derivedFrom(field: "delegator")
+
+  "Unbonding locks created by this delegator."
+  unbondingLocks: [UnbondingLock!]! @derivedFrom(field: "delegator")
+
+  "Round earnings associated with this delegator."
+  roundEarnings: [RoundEarnings!]! @derivedFrom(field: "delegator")
+}
+
+
+type UnbondingLock @entity {
+  "Unique ID for the unbonding lock."
+  id: Bytes!
+
+  "Delegator associated with this lock."
+  delegator: Delegator!
+
+  "Amount of tokens being unbonded."
+  amount: BigInt!
+
+  "Round in which the unbonded tokens become available for withdrawal."
+  withdrawRound: BigInt!
+
+  "The block number in which the unbonding event occurred."
+  blockNumber: BigInt!
+
+  "The timestamp of the block when the unbonding event occurred."
+  blockTimestamp: BigInt!
+
+  "The hash of the transaction that triggered the unbonding event."
+  transactionHash: Bytes!
+}
+
+type Round @entity {
+  "Unique ID for the round (the round number)."
+  id: String!
+
+  "The block at which the round starts."
+  startBlock: BigInt!
+
+  "The block at which the round ends."
+  endBlock: BigInt!
+
+  "Indicates if the round is initialized."
+  initialized: Boolean!
+
+  "The total active stake for this round."
+  totalActiveStake: BigInt!
+
+  "The block number in which the round was recorded."
+  blockNumber: BigInt!
+
+  "The timestamp of the block when the round was recorded."
+  blockTimestamp: BigInt!
+
+  "Round earnings associated with this round."
+  roundEarnings: [RoundEarnings!]! @derivedFrom(field: "round")
+}
+
+
+type RoundEarnings @entity {
+  "Unique ID for the round earnings record. Can be a combination of delegator ID and round ID to ensure uniqueness."
+  id: String!
+
+  "Delegator associated with these round earnings."
+  delegator: Delegator!
+
+  "The round number in which these earnings were recorded."
+  round: Round!
+
+  "Amount of rewards earned by the delegator in this round."
+  rewards: BigInt!
+
+  "Amount of fees earned by the delegator in this round."
+  fees: BigInt!
+
+  "The block number in which the earnings were recorded."
+  blockNumber: BigInt!
+
+  "The timestamp of the block when the earnings were recorded."
+  blockTimestamp: BigInt!
+}
+
+type PendingEarnings @entity {
+  "Unique ID for the pending earnings record."
+  id: Bytes!
+
+  "Delegator associated with these pending earnings."
+  delegator: Delegator!
+
+  "Pending stake for the delegator in this round."
+  pendingStake: BigInt! # Ensure this field is non-nullable.
+
+  "Pending fees for the delegator in this round."
+  pendingFees: BigInt!
+
+  "The round number associated with these earnings."
+  round: BigInt
+
+  "The block number in which the fees were withdrawn."
+  blockNumber: BigInt!
+
+  "The timestamp of the block when the fees were withdrawn."
+  blockTimestamp: BigInt!
 }
