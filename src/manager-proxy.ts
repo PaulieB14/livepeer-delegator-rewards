@@ -54,6 +54,7 @@ export function handleBond(event: BondEvent): void {
   let delegatorId = event.params.delegator;
   let delegator = Delegator.load(delegatorId);
 
+  // Initialize Delegator if it doesn't exist
   if (!delegator) {
     delegator = new Delegator(delegatorId);
     delegator.bondedAmount = BigInt.fromI32(0);
@@ -65,22 +66,26 @@ export function handleBond(event: BondEvent): void {
     delegator.nextUnbondingLockId = BigInt.fromI32(0);
   }
 
-  let entity = new Bond(
+  // Update Delegator fields
+  delegator.bondedAmount = event.params.bondedAmount;
+  delegator.delegateAddress = event.params.newDelegate;
+  delegator.save();
+
+  // Create Bond event
+  let bondEvent = new Bond(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   );
-  entity.newDelegate = event.params.newDelegate;
-  entity.oldDelegate = event.params.oldDelegate;
-  entity.delegator = delegatorId;
-  entity.additionalAmount = event.params.additionalAmount;
-  entity.bondedAmount = event.params.bondedAmount;
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
-  entity.save();
-
-  delegator.bondedAmount = event.params.bondedAmount;
-  delegator.save();
+  bondEvent.newDelegate = event.params.newDelegate;
+  bondEvent.oldDelegate = event.params.oldDelegate;
+  bondEvent.delegator = delegatorId;
+  bondEvent.additionalAmount = event.params.additionalAmount;
+  bondEvent.bondedAmount = event.params.bondedAmount;
+  bondEvent.blockNumber = event.block.number;
+  bondEvent.blockTimestamp = event.block.timestamp;
+  bondEvent.transactionHash = event.transaction.hash;
+  bondEvent.save();
 }
+
 
 // Handle EarningsClaimed Event
 export function handleEarningsClaimed(event: EarningsClaimedEvent): void {
@@ -91,6 +96,7 @@ export function handleEarningsClaimed(event: EarningsClaimedEvent): void {
   let delegatorId = event.params.delegator;
   let delegator = Delegator.load(delegatorId);
 
+  // Initialize Delegator if it doesn't exist
   if (!delegator) {
     delegator = new Delegator(delegatorId);
     delegator.bondedAmount = BigInt.fromI32(0);
@@ -116,31 +122,59 @@ export function handleEarningsClaimed(event: EarningsClaimedEvent): void {
   delegator.lastClaimRound = event.params.endRound;
   delegator.save();
 
-  // Create RoundEarnings entries for each round between startRound and endRound
+  // Compute rewards and fees per round
   let numRounds = event.params.endRound.minus(event.params.startRound).plus(BigInt.fromI32(1));
   let rewardsPerRound = event.params.rewards.div(numRounds);
   let feesPerRound = event.params.fees.div(numRounds);
+  let remainingRewards = event.params.rewards.mod(numRounds);
+  let remainingFees = event.params.fees.mod(numRounds);
 
-  for (let round = event.params.startRound; round.le(event.params.endRound); round = round.plus(BigInt.fromI32(1))) {
-    let roundEarningsId = delegatorId.toHex() + "-" + round.toString();
+  for (
+    let roundNum = event.params.startRound;
+    roundNum.le(event.params.endRound);
+    roundNum = roundNum.plus(BigInt.fromI32(1))
+  ) {
+    // Load or create the Round entity
+    let roundId = roundNum.toString();
+    let round = Round.load(roundId);
+    if (!round) {
+      round = new Round(roundId);
+      round.startBlock = BigInt.fromI32(0); // Populate with actual logic
+      round.endBlock = BigInt.fromI32(0);   // Populate with actual logic
+      round.initialized = true;
+      round.totalActiveStake = BigInt.fromI32(0);
+      round.blockNumber = event.block.number;
+      round.blockTimestamp = event.block.timestamp;
+    }
+    round.save();
+
+    // Load or create RoundEarnings
+    let roundEarningsId = `${delegatorId.toHex()}-${roundNum.toString()}`;
     let roundEarnings = RoundEarnings.load(roundEarningsId);
-
     if (!roundEarnings) {
       roundEarnings = new RoundEarnings(roundEarningsId);
       roundEarnings.delegator = delegatorId;
-      roundEarnings.round = round.toString();
+      roundEarnings.round = round.id;
       roundEarnings.rewards = BigInt.fromI32(0);
       roundEarnings.fees = BigInt.fromI32(0);
     }
 
+    // Add rewards/fees for the round
     roundEarnings.rewards = roundEarnings.rewards.plus(rewardsPerRound);
     roundEarnings.fees = roundEarnings.fees.plus(feesPerRound);
+
+    // Add remaining rewards/fees to the last round
+    if (roundNum.equals(event.params.endRound)) {
+      roundEarnings.rewards = roundEarnings.rewards.plus(remainingRewards);
+      roundEarnings.fees = roundEarnings.fees.plus(remainingFees);
+    }
+
     roundEarnings.blockNumber = event.block.number;
     roundEarnings.blockTimestamp = event.block.timestamp;
-
     roundEarnings.save();
   }
 }
+
 
 // Handle Rebond Event
 export function handleRebond(event: RebondEvent): void {
@@ -176,16 +210,18 @@ export function handleReward(event: RewardEvent): void {
   let roundId = event.block.number.toString();
   let round = Round.load(roundId);
 
+  // Initialize Round if it doesn't exist
   if (!round) {
     round = new Round(roundId);
-    round.startBlock = event.block.number;
-    round.endBlock = BigInt.fromI32(0);
-    round.initialized = false;
+    round.startBlock = event.block.number; // Populate with actual data if available
+    round.endBlock = BigInt.fromI32(0);    // Populate with actual data if available
+    round.initialized = true;
     round.totalActiveStake = BigInt.fromI32(0);
     round.blockNumber = event.block.number;
     round.blockTimestamp = event.block.timestamp;
   }
 
+  // Update total active stake for the round
   round.totalActiveStake = round.totalActiveStake.plus(event.params.amount);
   round.blockNumber = event.block.number;
   round.blockTimestamp = event.block.timestamp;
@@ -194,13 +230,10 @@ export function handleReward(event: RewardEvent): void {
 
 // Handle WithdrawFees Event
 export function handleWithdrawFees(event: WithdrawFeesEvent): void {
-  let entity = new PendingEarnings(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  );
-
   let delegatorId = event.params.delegator.toHex();
   let delegator = Delegator.load(Bytes.fromHexString(delegatorId));
 
+  // Initialize Delegator if it doesn't exist
   if (!delegator) {
     delegator = new Delegator(Bytes.fromHexString(delegatorId));
     delegator.bondedAmount = BigInt.fromI32(0);
@@ -213,13 +246,16 @@ export function handleWithdrawFees(event: WithdrawFeesEvent): void {
     delegator.save();
   }
 
-  entity.delegator = Bytes.fromHexString(delegatorId);
-  entity.pendingStake = BigInt.fromI32(0);
-  entity.pendingFees = event.params.amount;
-  entity.round = BigInt.fromI32(0); // Or make it nullable in schema
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.save();
+  let pendingEarnings = new PendingEarnings(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  pendingEarnings.delegator = Bytes.fromHexString(delegatorId);
+  pendingEarnings.pendingStake = BigInt.fromI32(0);
+  pendingEarnings.pendingFees = event.params.amount;
+  pendingEarnings.round = BigInt.fromI32(0); // Or make it nullable in schema
+  pendingEarnings.blockNumber = event.block.number;
+  pendingEarnings.blockTimestamp = event.block.timestamp;
+  pendingEarnings.save();
 }
 
 // Handle WithdrawStake Event
